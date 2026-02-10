@@ -67,10 +67,22 @@ def create_heatmap(points, background_image=None, width=900, height=600):
     xi_grid, yi_grid = np.meshgrid(xi, yi)
 
     # Rango RSSI fijo para colores y normalizacion
-    zmin, zmax = -80.0, 0.0
+    # zmin, zmax = -80.0, 0.0
+    zmin, zmax = rssi.min(), rssi.max()
+    if zmin == zmax:
+        tickvals = [int(np.round(zmin))]
+    else:
+        ticks = np.linspace(zmin, zmax, num=5)
+        tickvals = sorted(set(int(np.round(v)) for v in ticks))
+    ticktext = [str(v) for v in tickvals]
 
     # Interpolar valores en todo el grid
-    zi = griddata((x_px, y_px), rssi, (xi_grid, yi_grid), method="cubic", fill_value=zmin)
+    interp_method = "cubic" if len(x_px) >= 4 else ("linear" if len(x_px) >= 3 else "nearest")
+    try:
+        zi = griddata((x_px, y_px), rssi, (xi_grid, yi_grid), method=interp_method, fill_value=zmin)
+    except Exception as e:
+        # fallback to nearest if even linear fails
+        zi = griddata((x_px, y_px), rssi, (xi_grid, yi_grid), method="nearest", fill_value=zmin)
 
     # Aplicar suavizado gaussiano (sigma alto = mas difuminado, estilo eye-tracking)
     sigma = 10  # Ajusta: mas alto -> mas suave y difuminado
@@ -128,6 +140,13 @@ def create_heatmap(points, background_image=None, width=900, height=600):
         )
 
     # Heatmap suavizado estilo eye-tracking
+    # Interpolar x, y, rssi al grid para hover
+    from scipy.interpolate import griddata as gd
+    grid_x = gd((x_px, y_px), x, (xi_grid, yi_grid), method=interp_method, fill_value=np.nan)
+    grid_y = gd((x_px, y_px), y, (xi_grid, yi_grid), method=interp_method, fill_value=np.nan)
+    grid_rssi = gd((x_px, y_px), rssi, (xi_grid, yi_grid), method=interp_method, fill_value=np.nan)
+    grid_customdata = np.dstack([grid_x, grid_y, grid_rssi])
+
     fig.add_trace(go.Heatmap(
         x=xi,
         y=yi,
@@ -135,22 +154,23 @@ def create_heatmap(points, background_image=None, width=900, height=600):
         text=hover_text,
         colorscale=colorscale_eyetracking,
         zmin=zmin, zmax=zmax,
-        opacity=0.7,
+        opacity=1.0,
         showscale=True,
         colorbar=dict(
             title=dict(text="RSSI (dBm)", side="right"),
             thickness=15,
             len=0.6,
-            tickvals=[-80, -60, -40, -20, 0],
-            ticktext=["-80", "-60", "-40", "-20", "0"],
+            tickvals=tickvals,
+            ticktext=ticktext,
             x=1.02,
             xanchor="left",
             y=0.5,
         ),
+        customdata=grid_customdata,
         hovertemplate=(
-            "X: %{x:.0f} px<br>"
-            "Y: %{y:.0f} px<br>"
-            "%{text}<extra></extra>"
+            "X: %{customdata[0]:.2f}<br>"
+            "Y: %{customdata[1]:.2f}<br>"
+            "RSSI: %{customdata[2]:.1f} dBm<extra></extra>"
         ),
         connectgaps=False,
     ))
@@ -225,7 +245,7 @@ def create_heatmap(points, background_image=None, width=900, height=600):
         # Slider para opacidad
         sliders=[
             dict(
-                active=7,
+                active=10,
                 currentvalue=dict(prefix="Opacidad: ", suffix=""),
                 pad=dict(t=0, b=15),
                 x=0.05, y=0.0,

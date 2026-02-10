@@ -36,8 +36,8 @@ def render():
             st.dataframe(selected_df)
         
         with tabs[2]:
-            col_left, col_right, col_third = st.columns(3)
-            with col_left:
+            col1, col2, col3 = st.columns(3)
+            with col1:
                 beacon_options = sorted(selected_df["beacon"].dropna().unique().tolist())
                 beacon_default = "P2" if "P2" in beacon_options else (beacon_options[0] if beacon_options else None)
                 selected_beacon = st.selectbox(
@@ -46,7 +46,7 @@ def render():
                     index=beacon_options.index(beacon_default) if beacon_default in beacon_options else 0,
                 )
 
-            with col_right:
+            with col2:
                 channel_options = sorted(selected_df["channel"].dropna().unique().tolist())
                 channel_default = 37 if 37 in channel_options else (channel_options[0] if channel_options else None)
                 selected_channel = st.selectbox(
@@ -55,7 +55,7 @@ def render():
                     index=channel_options.index(channel_default) if channel_default in channel_options else 0,
                 )
 
-            with col_third:
+            with col3:
                 protocol_options = sorted(selected_df["protocol"].dropna().unique().tolist())
                 protocol_default = protocol_options[0] if protocol_options else None
                 selected_protocol = st.selectbox(

@@ -13,7 +13,7 @@ def transform_database(filename, content):
     content["x"] = int(x)
     content["y"] = int(y)
 
-    content["protocol"] = "UNKOWN"
+    content["protocol"] = "UNKNOWN"
 
     content = content[["timestamp", "x", "y", "beacon", "protocol", "channel", "rssi"]]
 
@@ -35,4 +35,3 @@ def etl(input_path, output_path, logger=None):
     df.to_csv(output_file, index=False)
     if logger is not None:
         logger.info("Data written to %s", output_file)
-

@@ -59,7 +59,7 @@ def render():
         col_left, col_right = st.columns([3, 1])
         with col_left:
             uploaded_file = st.file_uploader(
-                "Choose a file",
+                "Choose a file to load",
                 label_visibility="collapsed",
                 accept_multiple_files=False, type="csv")
         
