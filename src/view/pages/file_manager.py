@@ -40,7 +40,7 @@ def load_file_handler(uploaded_file):
 
 
 def render():
-    st.header("Database")
+    st.header("File manager")
 
     with st.container():
         st.markdown(

@@ -4,7 +4,7 @@ from pathlib import Path
 import streamlit as st
 
 from view.components.menu import menu
-from view.pages.db_manager import render as render_db_manager
+from view.pages.file_manager import render as render_file_manager
 from view.pages.home import render as render_home
 from view.pages.dashboard import render as render_dashboard
 
@@ -45,7 +45,7 @@ def main():
 
     pages = [
         st.Page(render_home, title="Home", url_path="home"),
-        st.Page(render_db_manager, title="DB Manager", url_path="db_manager"),
+        st.Page(render_file_manager, title="File Manager", url_path="db_manager"),
         st.Page(render_dashboard, title="Dashboard", url_path="dashboard"),
     ]
 
